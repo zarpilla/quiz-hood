@@ -31,12 +31,24 @@ app.use(morgan('dev'));
 app.get('/setup', function(req, res) {
 
 	// create a sample user
-	var nick = new User({ 
-		name: 'Nick Cerminara', 
+	var admin = new User({ 
+		name: 'admin', 
 		password: 'password',
 		admin: true 
 	});
-	nick.save(function(err) {
+	admin.save(function(err) {
+		if (err) throw err;
+
+		console.log('User saved successfully');
+		res.json({ success: true });
+	});
+
+	var other = new User({ 
+		name: 'user', 
+		password: 'password',
+		admin: false 
+	});
+	other.save(function(err) {
 		if (err) throw err;
 
 		console.log('User saved successfully');
@@ -78,7 +90,8 @@ apiRoutes.post('/authenticate', function(req, res) {
 
 				// if user is found and password is right
 				// create a token
-				var payload = {
+				var payload = {					
+					userId: user._id,
 					admin: user.admin	
 				}
 				var token = jwt.sign(payload, app.get('superSecret'), {
