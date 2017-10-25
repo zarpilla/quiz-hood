@@ -6,6 +6,7 @@ var app         = express();
 var bodyParser  = require('body-parser');
 var morgan      = require('morgan');
 var mongoose    = require('mongoose');
+var bcrypt      = require('bcrypt');
 
 var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var config = require('./config'); // get our config file
@@ -28,33 +29,36 @@ app.use(morgan('dev'));
 // =================================================================
 // routes ==========================================================
 // =================================================================
-app.get('/setup', function(req, res) {
 
-	// create a sample user
-	var admin = new User({ 
-		name: 'admin', 
-		password: 'password',
-		admin: true 
-	});
-	admin.save(function(err) {
-		if (err) throw err;
+// app.get('/setup', function(req, res) {
+	
+// 		// create a sample user
+// 		var admin = new User({ 
+// 			name: 'admin', 
+// 			password: '$2a$10$BrLKthj0U8u/J5CjZaLgW.Sy75Mc6IR5eOvTSJ78WSIuJk5WLbqy6',
+// 			admin: true 
+// 		});
+// 		admin.save(function(err) {
+// 			if (err) throw err;
+	
+// 			console.log('User saved successfully');
+// 			res.json({ success: true });
+// 		});
+	
+// 		var other = new User({ 
+// 			name: 'user', 
+// 			password: '$2a$10$BrLKthj0U8u/J5CjZaLgW.Sy75Mc6IR5eOvTSJ78WSIuJk5WLbqy6',
+// 			admin: false 
+// 		});
+// 		other.save(function(err) {
+// 			if (err) throw err;
+	
+// 			console.log('User saved successfully');
+// 			res.json({ success: true });
+// 		});
+// 	});
 
-		console.log('User saved successfully');
-		res.json({ success: true });
-	});
-
-	var other = new User({ 
-		name: 'user', 
-		password: 'password',
-		admin: false 
-	});
-	other.save(function(err) {
-		if (err) throw err;
-
-		console.log('User saved successfully');
-		res.json({ success: true });
-	});
-});
+	
 
 // basic route (http://localhost:8080)
 app.get('/', function(req, res) {
@@ -82,29 +86,30 @@ apiRoutes.post('/authenticate', function(req, res) {
 		if (!user) {
 			res.json({ success: false, message: 'Authentication failed. User not found.' });
 		} else if (user) {
+			// get hash of pwd
 
-			// check if password matches
-			if (user.password != req.body.password) {
-				res.json({ success: false, message: 'Authentication failed. Wrong password.' });
-			} else {
+			bcrypt.compare(req.body.password, user.password, function(err, match) {
+				if (match == true) {
+					// if user is found and password is right
+					// create a token
+					var payload = {					
+						userId: user._id,
+						admin: user.admin	
+					}
+					var token = jwt.sign(payload, app.get('superSecret'), {
+						expiresIn: 86400 // expires in 24 hours
+					});
 
-				// if user is found and password is right
-				// create a token
-				var payload = {					
-					userId: user._id,
-					admin: user.admin	
+					res.json({
+						success: true,
+						message: 'Enjoy your token!',
+						token: token
+					});
 				}
-				var token = jwt.sign(payload, app.get('superSecret'), {
-					expiresIn: 86400 // expires in 24 hours
-				});
-
-				res.json({
-					success: true,
-					message: 'Enjoy your token!',
-					token: token
-				});
-			}		
-
+				else {
+					res.json({ success: false, message: 'Authentication failed. Wrong password.' });
+				}
+			});
 		}
 
 	});
