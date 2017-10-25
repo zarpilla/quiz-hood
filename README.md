@@ -1,8 +1,8 @@
-# Node Token Authentication
+# Quiz Hood
 
 This repo uses JSON Web Tokens and the [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) package to implement token based authentication on a simple Node.js API.
 
-This is a starting point to demonstrate the method of authentication by verifying a token using Express route middleware.
+This is a starting point to a simple quiz application.
 
 ## Requirements
 
@@ -10,12 +10,12 @@ This is a starting point to demonstrate the method of authentication by verifyin
 
 ## Usage
 
-1. Clone the repo: `git clone git@github.com:scotch-io/node-token-authentication`
+1. Clone the repo: `git clone https://github.com/zarpilla/quiz-hood`
 2. Install dependencies: `npm install`
 3. Change SECRET in `config.js`
 4. Add your own MongoDB database to `config.js`
 5. Start the server: `node server.js`
-6. Create sample user by visiting: `http://localhost:8080/setup`
+6. Create sample users by visiting: `http://localhost:8080/setup`
 
 Once everything is set up, we can begin to use our app by creating and verifying tokens.
 
